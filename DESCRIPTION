@@ -1,0 +1,23 @@
+Package: exposhurdata
+Title: Download Hurricane Exposure Datasets and Calculate Hurricane Exposure At Any Geographic Unit
+Version: 0.0.0.9000
+Authors@R: 
+    person("Ryan", "Zomorrodi", , "rzomor2@uic.edu", role = c("aut", "cre"))
+Description: What the package does (one paragraph).
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: 
+    cli,
+    httr2,
+    rlang (>= 1.1.0),
+    sf,
+    terra,
+    units
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3

@@ -1,0 +1,133 @@
+---
+title: "Plotting"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{plotting}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(exposhurdata)
+library(tidyverse)
+library(tigris)
+library(sf)
+```
+
+```{r}
+hurricanes <- c(
+  "ALLISON-2001",
+  "CHARLEY-2004",
+  "FLORENCE-2018",
+  "FRANCES-2004",
+  "HARVEY-2017",
+  "IKE-2008",
+  "IRENE-2011",
+  "IRMA-2017",
+  "IVAN-2004",
+  "KATRINA-2005",
+  "MATTHEW-2016",
+  "MICHAEL-2018",
+  "RITA-2005",
+  "SANDY-2012",
+  "WILMA-2005"
+)
+
+hur_info <- tibble(hurricane = hurricanes)
+
+hur_info$hurdat2 <- pmap(hur_info, function(hurricane) {
+  get_hurdat2(
+    basin = "AL",
+    hurricane
+  )
+})
+
+hur_info$radii <- pmap(hur_info, function(hurdat2, ...) {
+  hurdat2 %>%
+    mutate(
+      radii_34kt = st_wind_radii(
+        hurdat2,
+        ne_dist = "ne_34kt_radii",
+        se_dist = "se_34kt_radii",
+        sw_dist = "sw_34kt_radii",
+        nw_dist = "nw_34kt_radii",
+        max_cells = 10000
+      )
+    ) %>%
+    mutate(
+      radii_50kt = st_wind_radii(
+        hurdat2,
+        ne_dist = "ne_50kt_radii",
+        se_dist = "se_50kt_radii",
+        sw_dist = "sw_50kt_radii",
+        nw_dist = "nw_50kt_radii",
+        max_cells = 10000
+      )
+    ) %>%
+    mutate(
+      radii_60kt = st_wind_radii(
+        hurdat2,
+        ne_dist = "ne_64kt_radii",
+        se_dist = "se_64kt_radii",
+        sw_dist = "sw_64kt_radii",
+        nw_dist = "nw_64kt_radii",
+        max_cells = 10000
+      )
+    ) %>%
+    select(datetime, starts_with("radii"))
+})
+```
+
+```{r}
+pmap(hur_info, function(hurricane, radii, ...) {
+  dir.create(file.path("output", hurricane))
+
+  radii %>%
+    st_drop_geometry() %>%
+    st_set_geometry(.[["radii_34kt"]]) %>%
+    select(-starts_with("radii")) %>%
+    st_write(file.path("output", hurricane, "radii_34kt.geojson"))
+
+  radii %>%
+    st_drop_geometry() %>%
+    st_set_geometry(.[["radii_50kt"]]) %>%
+    select(-starts_with("radii")) %>%
+    st_write(file.path("output", hurricane, "radii_50kt.geojson"))
+
+  radii %>%
+    st_drop_geometry() %>%
+    st_set_geometry(.[["radii_60kt"]]) %>%
+    select(-starts_with("radii")) %>%
+    st_write(file.path("output", hurricane, "radii_64kt.geojson"))
+})
+
+
+library(gganimate)
+
+ggplot(harvey) +
+  geom_sf(data = txla_states) +
+  geom_sf(aes(geometry = radii_34kt_geom), fill = "green") +
+  geom_sf(aes(geometry = radii_50kt_geom), fill = "yellow") +
+  geom_sf(aes(geometry = radii_64kt_geom), fill = "red") +
+  coord_sf(
+    xlim = c(
+      min(harvey_bbox$xmin, txla_bbox$xmin),
+      max(harvey_bbox$xmax, txla_bbox$xmax)
+    ),
+    ylim = c(
+      min(harvey_bbox$ymin, txla_bbox$ymin),
+      max(harvey_bbox$ymax, txla_bbox$ymax)
+    )
+  ) +
+  theme_void() +
+  labs(title = "Datetime: {frame_time}") +
+  transition_time(datetime) +
+  ease_aes("linear")
+```
