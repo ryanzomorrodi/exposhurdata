@@ -144,6 +144,7 @@ generate_pop_est <- function(year) {
   total_est[c("geoid", "est_customers")]
 }
 
+#' @export
 stabbr_to_fips <- c(
   AL = "01",
   AK = "02",
