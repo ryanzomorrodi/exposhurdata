@@ -29,9 +29,8 @@ download_nClimGrid <- function(year, months) {
 #' Downloads NOAA [nClimGrid-Daily](https://www.ncei.noaa.gov/products/land-based-station/nclimgrid-daily)
 #' data for the specified interval.
 #'
-#' @param interval Dates to get weather data for
-#' @param path Path to download files into (if not provided,
-#' files will be download into the `tempdir()`)
+#' @param start start date to get data for
+#' @param end end date to get date for
 #'
 #' @return terra raster of climate data over the interval specified
 #' @export

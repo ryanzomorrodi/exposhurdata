@@ -7,10 +7,9 @@
 get_nClimGrid(start, end)
 }
 \arguments{
-\item{interval}{Dates to get weather data for}
+\item{start}{start date to get data for}
 
-\item{path}{Path to download files into (if not provided,
-files will be download into the \code{tempdir()})}
+\item{end}{end date to get date for}
 }
 \value{
 terra raster of climate data over the interval specified

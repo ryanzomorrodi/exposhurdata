@@ -51,7 +51,8 @@ download_eaglei <- function(year) {
 #' total number of customers in a state ([EIA](https://www.eia.gov/electricity/data/browser/#/topic/56?agg=0,1&geo=g&endsec=vg&linechart=ELEC.CUSTOMERS.US-ALL.A~ELEC.CUSTOMERS.US-RES.A~ELEC.CUSTOMERS.US-COM.A~ELEC.CUSTOMERS.US-IND.A&columnchart=ELEC.CUSTOMERS.US-ALL.A~ELEC.CUSTOMERS.US-RES.A~ELEC.CUSTOMERS.US-COM.A~ELEC.CUSTOMERS.US-IND.A&map=ELEC.CUSTOMERS.US-ALL.A&freq=A&start=2008&end=2023&ctype=map&ltype=pin&rtype=s&maptype=0&rse=0&pin=)
 #' year of storm)
 #'
-#' @param year Year to get outage data for
+#' @param start start date to get data for
+#' @param end end date to get date for
 #'
 #' @return raw eaglei data with est_cusomters generated with the procedure described in details
 #'
@@ -61,14 +62,28 @@ download_eaglei <- function(year) {
 #' \dontrun{
 #' harvey_eaglei <- get_eaglei(2017)
 #' }
-get_eaglei <- function(year) {
+get_eaglei <- function(start, end) {
+  year <- as.numeric(format(start, "%Y"))
+
   eaglei <- download_eaglei(year) |>
     read.csv()
+  eaglei <- eaglei[
+    start <= eaglei$run_start_time & eaglei$run_start_time <= end,
+  ]
   eaglei$fips_code <- sprintf("%05d", eaglei$fips_code)
 
   customer_est <- generate_pop_est(year)
 
-  merge(eaglei, customer_est, by.x = "fips_code", by.y = "geoid")
+  eaglei <- merge(eaglei, customer_est, by.x = "fips_code", by.y = "geoid")
+  eaglei <- eaglei[c(
+    "fips_code",
+    "run_start_time",
+    "customers_out",
+    "est_customers"
+  )]
+  colnames(eaglei) <- c("geoid", "datetime", "customers_out", "est_customers")
+
+  eaglei
 }
 
 generate_pop_est <- function(year) {

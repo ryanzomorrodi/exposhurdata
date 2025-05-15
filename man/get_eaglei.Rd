@@ -4,10 +4,12 @@
 \alias{get_eaglei}
 \title{Download Outage Data}
 \usage{
-get_eaglei(year)
+get_eaglei(start, end)
 }
 \arguments{
-\item{year}{Year to get outage data for}
+\item{start}{start date to get data for}
+
+\item{end}{end date to get date for}
 }
 \value{
 raw eaglei data with est_cusomters generated with the procedure described in details
